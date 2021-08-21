@@ -1,0 +1,47 @@
+---
+# tasks file for execute_mysql_script
+
+- name: template main_script
+  template:
+    src: main_script.sql.j2
+    dest: "{{ dest_sql_script }}"
+
+- name: execute script
+  shell: mysql -u root mysql < "{{ dest_sql_script }}"
+
+- name: delete main_script
+  file:
+    path: "{{ dest_sql_script }}"
+    state: absent
+
+- name: get status db
+  shell: systemctl status mariadb
+  register: status_db
+
+- name: get databases
+  shell: mysql -u root -p"{{db_root_pass}}" -e 'SHOW DATABASES;'
+  register: status_dbs
+
+- name: get tables from my db
+  shell: mysql -u root -p"{{db_root_pass}}" -e 'USE {{ db_name }};SHOW TABLES;'
+  register: status_tables
+
+- name: get data from one of table
+  shell: mysql -u root -p"{{db_root_pass}}" -e 'USE {{ db_name }};SELECT * FROM {{ db_table }};'
+  register: db_data
+
+- name: show status mariadb
+  debug:
+    var: status_db.stdout_lines
+
+- name: show databases
+  debug:
+    var: status_dbs.stdout_lines
+
+- name: show tables in my db
+  debug:
+    var: status_tables.stdout_lines
+
+- name: show data from table
+  debug:
+    var: db_data.stdout_lines

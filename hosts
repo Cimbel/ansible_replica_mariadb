@@ -1,0 +1,19 @@
+# Hosts file for ansible playbooks
+
+
+# Group for web-server
+
+[centos_slave1]
+roma
+
+
+# Group for mariadb database
+
+[centos_slave2]
+logan
+
+
+# Group for mariadb slaves
+
+[db_slave]
+mariadb_slave

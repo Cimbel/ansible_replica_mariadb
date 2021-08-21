@@ -1,0 +1,49 @@
+---
+# tasks file for db_slave
+
+- name: install database
+  yum:
+    name:
+      - mariadb
+      - mariadb-server
+    state: present
+
+- name: copy file
+  copy:
+    src: server.cnf
+    dest: "{{ path_to_conf_file }}" 
+
+- name: start and enable db
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: template sql script
+  template:
+    src: slave_script.sql.j2
+    dest: "{{ path_to_sql_script }}"
+
+- name: execute sql script
+  shell: mysql -u root mysql < "{{ path_to_sql_script }}"
+
+- name: delete sql script
+  file:
+    path: "{{ path_to_sql_script }}"
+    state: absent
+
+- name: get slave's status
+  shell: mysql -u root -e 'SHOW SLAVE STATUS \G'
+  register: slave_status
+
+- name: get db status
+  shell: systemctl status mariadb
+  register: db_status
+
+- name: show slave status
+  debug:
+    var: slave_status.stdout_lines
+
+- name: show mariadb status
+  debug:
+    var: db_status.stdout_lines

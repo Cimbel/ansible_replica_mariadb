@@ -1,0 +1,18 @@
+---
+# tasks file for check-status-slave
+
+- name: get slave status
+  shell: mysql -u root -p"{{db_root_pass}}" -e 'SHOW SLAVE STATUS \G'
+  register: status_slave
+
+- name: get status db
+  shell: systemctl status mariadb
+  register: db_status
+
+- name: show status db
+  debug:
+    var: db_status.stdout_lines
+
+- name: show slave status
+  debug:  
+    var: status_slave.stdout_lines

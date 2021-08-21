@@ -1,0 +1,9 @@
+CHANGE MASTER TO
+  MASTER_HOST='{{ hostvars.logan.ansible_host }}',
+  MASTER_USER='{{ replica_user }}',
+  MASTER_PASSWORD='{{ replica_pass }}',
+  MASTER_LOG_FILE='master1-bin.000003',
+  MASTER_LOG_POS=506,
+  MASTER_PORT={{ db_port }},
+  MASTER_CONNECT_RETRY=10;
+START SLAVE;

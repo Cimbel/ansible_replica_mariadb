@@ -1,0 +1,17 @@
+UPDATE user SET password=PASSWORD('{{ db_root_pass }}') WHERE User='root';
+FLUSH PRIVILEGES;
+DELETE FROM mysql.user WHERE user = '';
+DROP DATABASE test;
+DROP DATABASE IF EXISTS {{ db_name }};
+CREATE DATABASE {{ db_name }};
+USE {{ db_name }};
+DROP TABLE IF EXISTS {{ db_name }}.{{ db_table }};
+CREATE TABLE {{ db_table }}(
+  id INT primary key,
+  new_user varchar(30),
+  descript varchar(50)
+);
+INSERT INTO {{ db_name }}.{{ db_table }}(id, new_user, descript) VALUES(1, "Ansible", "This record was created by Ansible tool!");
+CREATE USER '{{ db_user }}'@{{ hostvars.roma.ansible_host }} IDENTIFIED BY '{{ db_pass }}';
+GRANT ALL PRIVILEGES ON {{ db_name }}.* TO '{{ db_user }}'@{{ hostvars.roma.ansible_host }} IDENTIFIED BY '{{ db_pass }}';
+FLUSH PRIVILEGES;

@@ -1,0 +1,75 @@
+---
+# tasks file for db_mysql
+- name: installing db
+  yum:
+    name:
+      - mariadb
+      - mariadb-server
+    state: present
+
+- name: configuring SELinux to start mysql on any port
+  seboolean:
+    name: mysql_connect_any
+    state: true
+    persistent: yes
+
+- name: allowing mysql port
+  firewalld:
+    state: enabled
+    permanent: yes
+    port: "{{ mysql_port }}/tcp"
+
+- name: allow slave connect to master
+  firewalld:
+    rich_rule: |
+            rule family="ipv4" 
+            source address="{{hostvars.mariadb_slave.ansible_host}}/24" 
+            port protocol="tcp" port="{{mysql_port}}" accept
+    state: enabled
+    permanent: yes
+
+
+- name: reloading firewalld
+  service:
+    name: firewalld
+    state: reloaded
+
+- name: sending sql script
+  template:
+    src: "script.sql.j2"
+    dest: "{{ path_sql_script }}"
+
+- name: copy config
+  copy:
+    src: server.cnf
+    dest: "{{ path_db_conf }}"
+
+- name: start db
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: execute script
+  shell: mysql -u root mysql < "{{ path_sql_script }}"
+
+- name: delete sql script
+  file:
+    path: "{{ path_sql_script }}"
+    state: absent
+
+- name: get status master log
+  shell: mysql -u root -e 'SHOW MASTER STATUS;'
+  register: master_status
+
+- name: get status mariadb
+  shell: systemctl status mariadb
+  register: db_status
+
+- name: show master log status
+  debug:
+    var: master_status.stdout_lines
+
+- name: show mariadb status
+  debug:
+    var: db_status.stdout_lines

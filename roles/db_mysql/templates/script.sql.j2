@@ -1,0 +1,5 @@
+CREATE USER '{{ db_replica_user }}'@'{{ hostvars.mariadb_slave.ansible_host }}' IDENTIFIED BY '{{ db_replica_pass }}';
+GRANT REPLICATION SLAVE ON *.* TO '{{ db_replica_user }}'@'{{ hostvars.mariadb_slave.ansible_host }}';
+FLUSH TABLES WITH READ LOCK;
+SHOW MASTER STATUS;
+UNLOCK TABLES;

@@ -1,0 +1,30 @@
+---
+# playbook for db slave
+
+- name: install and configure mariadb master
+  hosts: centos_slave2
+  become: yes
+
+  roles:
+    - db_mysql
+
+- name: install and configure mariadb slave
+  hosts: db_slave
+  become: yes
+
+  roles:
+    - db_slave
+
+- name: executing additional script for master
+  hosts: centos_slave2
+  become: yes
+
+  roles:
+     - execute_mysql_script
+
+- name: check slave status
+  hosts: db_slave
+  become: yes
+
+  roles:
+    - check-status-slave
